@@ -47,6 +47,6 @@ rates_df.reset_index(drop=True, inplace=True)
 
 # print(rates_df)
 csv_encoding = 'utf-8'
-rates_df.to_csv("/code/USDJPY/1hour.csv", index=False, encoding=csv_encoding)
+rates_df.to_csv("/code/USDJPY/15min.csv", index=False, encoding=csv_encoding)
 
 print('end take_price.py')
