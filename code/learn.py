@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 from scipy.interpolate import interp1d
@@ -21,30 +22,21 @@ def spline_interpolation(df, column_name):
 
 df = spline_interpolation(df, 'close')
 
-'''
-# 補間後のデータをプロット
-plt.figure(figsize=(16, 8))
-plt.plot(df['time'], df['close'], label='Interpolated Close Price')
-plt.title('USD/JPY Close Price After Spline Interpolation')
-plt.xlabel('Time')
-plt.ylabel('Price')
-plt.legend()
-plt.grid(True)
-plt.show()
-'''
+# 3. 移動平均の計算
+df['MA100'] = df['close'].rolling(window=100).mean()
 
-# 3. 移動平均とMACDの計算
-df['MA5'] = df['close'].rolling(window=5).mean()
-df['EMA6'] = df['close'].ewm(span=6, adjust=False).mean()
-df['EMA13'] = df['close'].ewm(span=13, adjust=False).mean()
-df['MACD'] = df['EMA6'] - df['EMA13']
-df['Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
+# MACDをコメントアウト
+# df['EMA6'] = df['close'].ewm(span=6, adjust=False).mean()
+# df['EMA13'] = df['close'].ewm(span=13, adjust=False).mean()
+# df['MACD'] = df['EMA6'] - df['EMA13']
+# df['Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
 
 # 欠損値を補完
 df.fillna(method='bfill', inplace=True)
 
 # 4. データ前処理
-features = df[['close', 'MA5', 'MACD', 'Signal']].values
+# 特徴量からMACDとSignalを削除
+features = df[['close', 'MA100']].values
 scaler = MinMaxScaler()
 scaled_features = scaler.fit_transform(features)
 
@@ -66,24 +58,26 @@ model.add(Dense(1))
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 # 6. 学習
-model.fit(X, y, epochs=50, batch_size=32)
+model.fit(X, y, epochs=500, batch_size=32)
 
 # 7. 予測
 future_steps = 10
-last_data = scaled_features[-window_size:].reshape(1, window_size, X.shape[2])  # 最新のwindow_size分のデータ
+last_data = scaled_features[-window_size:].reshape(1, window_size, X.shape[2])
 predictions = []
 for _ in range(future_steps):
     predicted_price = model.predict(last_data)
     predictions.append(predicted_price[0, 0])
-    # predicted_priceを適切な形状に変換し、他の特徴量を0で埋める
-    predicted_price_full = np.concatenate([predicted_price, np.zeros((1, 3))], axis=1)
-    last_data = np.concatenate([last_data[:, 1:, :], predicted_price_full.reshape(1, 1, X.shape[2])], axis=1)
+    # predicted_priceの形状を(1, 1, X.shape[2])に変更
+    predicted_price_full = np.concatenate([predicted_price, np.zeros((1, X.shape[2] - 1))], axis=1)
+    predicted_price_full = predicted_price_full.reshape(1, 1, X.shape[2])
+    last_data = np.concatenate([last_data[:, 1:, :], predicted_price_full], axis=1)
 
 predictions = np.array(predictions).reshape(-1, 1)
-predictions = scaler.inverse_transform(np.concatenate([predictions, np.zeros((future_steps, 3))], axis=1))[:, 0]
+# 予測値を逆スケーリングする際、元の特徴量の数に合わせて0を追加
+predictions = scaler.inverse_transform(np.concatenate([predictions, np.zeros((future_steps, features.shape[1] - 1))], axis=1))[:, 0]
 
 # 8. 評価
-actual_future = df['close'].values[-future_steps:]  # 予測期間の実際の値
+actual_future = df['close'].values[-future_steps:]
 mae = mean_absolute_error(actual_future, predictions)
 rmse = np.sqrt(mean_squared_error(actual_future, predictions))
 r2 = r2_score(actual_future, predictions)
@@ -94,8 +88,8 @@ print(f"R^2: {r2}")
 
 # 9. プロット
 plt.figure(figsize=(16, 8))
-plt.plot(df['time'].iloc[-len(actual_future):], actual_future, label='Actual')  # 実際の値
-plt.plot(df['time'].iloc[-len(actual_future):], predictions, label='Predicted', color='red')  # 予測値
+plt.plot(df['time'].iloc[-len(actual_future):], actual_future, label='Actual')
+plt.plot(df['time'].iloc[-len(actual_future):], predictions, label='Predicted', color='red')
 plt.legend()
 plt.title('USD/JPY Price Prediction')
 plt.xlabel('Time')
