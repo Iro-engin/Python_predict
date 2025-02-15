@@ -61,7 +61,7 @@ model.compile(loss='mean_squared_error', optimizer='adam')
 model.fit(X, y, epochs=500, batch_size=32)
 
 # 7. 予測
-future_steps = 10
+future_steps = 100
 last_data = scaled_features[-window_size:].reshape(1, window_size, X.shape[2])
 predictions = []
 for _ in range(future_steps):
