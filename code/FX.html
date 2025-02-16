@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <title>Web入力フォーム</title>
+</head>
+<body>
+  <h1>Web入力フォーム</h1>
+  <form id="myForm">
+    <label for="currencyPair">通貨ペア:</label>
+    <select id="currencyPair" name="currencyPair">
+      <option value="USD/JPY">USD/JPY</option>
+      <option value="EUR/USD">EUR/USD</option>
+      <option value="GBP/JPY">GBP/JPY</option>
+    </select><br><br>
+
+       
+    <label for="analysisPeriod">一括分析期間 (1～100):</label>
+    <input type="number" id="analysisPeriod" name="analysisPeriod" min="1" max="100"><br><br>
+
+    <label for="timeAxis">時間軸:</label>
+    <select id="timeAxis" name="timeAxis" multiple>
+      <option value="1m">1分足</option>
+      <option value="5m">5分足</option>
+      <option value="1h">1時間足</option>
+      <option value="1d">日足</option>
+    </select><br><br>
+
+    <button type="button" onclick="saveData()">決定</button>
+  </form>
+
+  <script src="script.js"></script>
+</body>
+</html>

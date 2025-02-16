@@ -25,7 +25,7 @@ print(terminal_info_dict['company'])
 '''
 
 symbol = 'USDJPY'
-timeframe = mt5.TIMEFRAME_H1
+timeframe = mt5.TIMEFRAME_M15
 start_date = datetime(2024, 1, 1)
 end_date = datetime(2024, 12, 31)
 Number_data = 10000

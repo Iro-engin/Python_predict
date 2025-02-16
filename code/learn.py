@@ -9,7 +9,7 @@ from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 
 # 1. データ準備
-df = pd.read_csv("/code/USDJPY/1hour.csv")
+df = pd.read_csv("/code/USDJPY/15min.csv")
 
 # 2. 欠損値補間 (三次スプライン補間)
 def spline_interpolation(df, column_name):
@@ -58,7 +58,7 @@ model.add(Dense(1))
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 # 6. 学習
-model.fit(X, y, epochs=500, batch_size=32)
+model.fit(X, y, epochs=50, batch_size=32)
 
 # 7. 予測
 future_steps = 100
@@ -73,7 +73,6 @@ for _ in range(future_steps):
     last_data = np.concatenate([last_data[:, 1:, :], predicted_price_full], axis=1)
 
 predictions = np.array(predictions).reshape(-1, 1)
-# 予測値を逆スケーリングする際、元の特徴量の数に合わせて0を追加
 predictions = scaler.inverse_transform(np.concatenate([predictions, np.zeros((future_steps, features.shape[1] - 1))], axis=1))[:, 0]
 
 # 8. 評価

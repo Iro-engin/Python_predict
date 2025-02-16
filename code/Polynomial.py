@@ -15,7 +15,7 @@ rates_df['time'] = pd.to_datetime(rates_df['time'])
 close_prices = rates_df['close'].values
 
 # 多項式近似を用いてデータを平滑化
-degree = 3  # 多項式の次数
+degree = 50  # 多項式の次数
 x = np.arange(len(close_prices))
 poly_coeffs = np.polyfit(x, close_prices, degree)
 poly_fit = np.polyval(poly_coeffs, x)
