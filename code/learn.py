@@ -61,7 +61,7 @@ model.compile(loss='mean_squared_error', optimizer='adam')
 model.fit(X, y, epochs=50, batch_size=32)
 
 # 7. 予測
-future_steps = 100
+future_steps = 30
 last_data = scaled_features[-window_size:].reshape(1, window_size, X.shape[2])
 predictions = []
 for _ in range(future_steps):
@@ -76,14 +76,19 @@ predictions = np.array(predictions).reshape(-1, 1)
 predictions = scaler.inverse_transform(np.concatenate([predictions, np.zeros((future_steps, features.shape[1] - 1))], axis=1))[:, 0]
 
 # 8. 評価
+def mean_absolute_percentage_error(y_true, y_pred):
+    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+
 actual_future = df['close'].values[-future_steps:]
 mae = mean_absolute_error(actual_future, predictions)
 rmse = np.sqrt(mean_squared_error(actual_future, predictions))
 r2 = r2_score(actual_future, predictions)
+mape = mean_absolute_percentage_error(actual_future, predictions)
 
 print(f"MAE: {mae}")
 print(f"RMSE: {rmse}")
 print(f"R^2: {r2}")
+print(f"MAPE: {mape}%")
 
 # 9. プロット
 plt.figure(figsize=(16, 8))
