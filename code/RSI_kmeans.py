@@ -8,7 +8,7 @@ from scipy.interpolate import interp1d
 df = pd.read_csv("/code/USDJPY/15min.csv")
 
 # 2. RSIの計算 (期間100)
-def calculate_rsi(df, period=100):
+def calculate_rsi(df, period=14):
     delta = df['close'].diff()
     gain = delta.where(delta > 0, 0)
     loss = -delta.where(delta < 0, 0)
