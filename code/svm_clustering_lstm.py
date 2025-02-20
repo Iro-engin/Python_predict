@@ -83,10 +83,10 @@ model.add(Dense(1))
 model.compile(loss='mean_squared_error', optimizer='adam')
 
 # 学習
-model.fit(X, y, epochs=50, batch_size=32)
+model.fit(X, y, epochs=100, batch_size=32)
 
 # 予測
-future_steps = 20
+future_steps = 5
 last_data = scaled_features[-window_size:].reshape(1, window_size, 1)
 for _ in range(future_steps):
     predicted_value = model.predict(last_data)
@@ -111,14 +111,17 @@ predicted_df = df[['predicted_close']].dropna()
 predicted_df.to_csv("/code/USDJPY/predicted_close.csv", index=False)
 
 # 無効な値を確認して処理
-actual_future = df['close'].iloc[-future_steps:].values
-predicted_close = np.nan_to_num(predicted_close)
-
 # actual_futureをCSVファイルに保存
 actual_future_df = pd.DataFrame({'actual_future': df['close'].iloc[-future_steps*2:-future_steps].values})
 actual_future_df.to_csv("/code/USDJPY/actual_future.csv", index=False)
 print(len(actual_future_df))
 
+# 評価とプロットを行う対象をactual_future.csvとpredicted_close.csvに変更
+actual_df = pd.read_csv("/code/USDJPY/actual_future.csv")
+predicted_df = pd.read_csv("/code/USDJPY/predicted_close.csv")
+
+actual_values = actual_df['actual_future'].values
+predicted_values = predicted_df['predicted_close'].values
 
 # 評価
 def mean_absolute_percentage_error(y_true, y_pred):
@@ -127,12 +130,12 @@ def mean_absolute_percentage_error(y_true, y_pred):
 def sign_accuracy(y_true, y_pred):
     return np.mean(np.sign(y_true) == np.sign(y_pred))
 
-mae = mean_absolute_error(actual_future, predicted_close)
-rmse = np.sqrt(mean_squared_error(actual_future, predicted_close))
-r2 = r2_score(actual_future, predicted_close)
-mape = mean_absolute_percentage_error(actual_future, predicted_close)
-sign_acc = sign_accuracy(actual_future, predicted_close)
-corr_coef = np.corrcoef(actual_future, predicted_close)[0, 1]
+mae = mean_absolute_error(actual_values, predicted_values)
+rmse = np.sqrt(mean_squared_error(actual_values, predicted_values))
+r2 = r2_score(actual_values, predicted_values)
+mape = mean_absolute_percentage_error(actual_values, predicted_values)
+sign_acc = sign_accuracy(actual_values, predicted_values)
+corr_coef = np.corrcoef(actual_values, predicted_values)[0, 1]
 
 print(f"MAE: {mae}")
 print(f"RMSE: {rmse}")
@@ -143,8 +146,8 @@ print(f"Correlation Coefficient: {corr_coef}")
 
 # プロット
 plt.figure(figsize=(16, 8))
-plt.plot(df['time'].iloc[-future_steps:], actual_future, label='Actual')
-plt.plot(df['time'].iloc[-future_steps:], predicted_close, label='Predicted', color='red')
+plt.plot(actual_values, label='Actual')
+plt.plot(predicted_values, label='Predicted', color='red')
 plt.legend()
 plt.title('USD/JPY Close Price Prediction')
 plt.xlabel('Time')

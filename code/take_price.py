@@ -25,7 +25,7 @@ print(terminal_info_dict['company'])
 '''
 
 symbol = 'USDJPY'
-timeframe = mt5.TIMEFRAME_M15
+timeframe = mt5.TIMEFRAME_M5
 start_date = datetime(2024, 1, 1)
 end_date = datetime(2024, 12, 31)
 Number_data = 10000
@@ -47,6 +47,6 @@ rates_df.reset_index(drop=True, inplace=True)
 
 # print(rates_df)
 csv_encoding = 'utf-8'
-rates_df.to_csv("/code/USDJPY/15min.csv", index=False, encoding=csv_encoding)
+rates_df.to_csv("/code/USDJPY/5min.csv", index=False, encoding=csv_encoding)
 
 print('end take_price.py')
