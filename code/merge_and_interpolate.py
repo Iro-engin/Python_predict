@@ -46,8 +46,8 @@ for col in ['open', 'high', 'low', 'close']:
     hourly_df = interpolate_with_lstm(hourly_df, minute_df, col)
 
 # Merge predicted close prices with hourly data
-hourly_df['predicted_close'] = np.nan
-hourly_df.loc[hourly_df.index[-len(predicted_df):], 'predicted_close'] = predicted_df['predicted_close'].values
+for value in ["predicted_open","predicted_high","predicted_low","predicted_close"]:
+    hourly_df[value]=predicted_df[value].values
 
 # Interpolate between the last 6 data points of hourly_df and the first data point of predicted_df using LSTM
 def interpolate_between_points(hourly_df, predicted_df, column_name, window_size=50):
