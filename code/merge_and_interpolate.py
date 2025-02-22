@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import r2_score
 from tensorflow.keras.models import load_model
 
 # Load data
@@ -85,7 +86,9 @@ hourly_df.to_csv("/code/USDJPY/merged_interpolated_data.csv", index=False)
 def evaluate_interpolation(actual, predicted):
     mae = np.mean(np.abs(actual - predicted))
     rmse = np.sqrt(np.mean((actual - predicted) ** 2))
-    return mae, rmse
+    r2 = r2_score(actual, predicted)
+    corr_coef = np.corrcoef(actual, predicted)[0, 1]
+    return mae, rmse, r2, corr_coef
 
 # Plot results
 plt.figure(figsize=(16, 8))
@@ -101,14 +104,14 @@ plt.show()
 
 # Evaluate and plot interpolation results
 for col in ['open', 'high', 'low', 'close']:
-    actual = hourly_df[col].iloc[-20:].values
-    predicted = hourly_df['predicted_close'].iloc[-20:].values
-    mae, rmse = evaluate_interpolation(actual, predicted)
-    print(f"{col.capitalize()} - MAE: {mae}, RMSE: {rmse}")
+    actual = hourly_df[col].iloc[-5:].values
+    predicted = hourly_df['predicted_close'].iloc[-5:].values  # Ensure the same shape
+    mae, rmse, r2, corr_coef = evaluate_interpolation(actual, predicted)
+    print(f"{col.capitalize()} - MAE: {mae}, RMSE: {rmse}, R^2: {r2}, Correlation Coefficient: {corr_coef}")
 
     plt.figure(figsize=(16, 8))
-    plt.plot(hourly_df['time'].iloc[-20:], actual, label='Actual')
-    plt.plot(hourly_df['time'].iloc[-20:], predicted, label='Predicted', linestyle='--', color='red')
+    plt.plot(hourly_df['time'].iloc[-5:], actual, label='Actual')
+    plt.plot(hourly_df['time'].iloc[-5:], predicted, label='Predicted', linestyle='--', color='red')
     plt.legend()
     plt.title(f'{col.capitalize()} Interpolation Evaluation')
     plt.xlabel('Time')
